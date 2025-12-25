@@ -1,26 +1,28 @@
-name: AI Post Generator Short
+name: AI Post Generator (Free X Copy)
 
 on:
   schedule:
+    # UTC 0:00 = 日本時間 9:00
     - cron: '0 0 * * *'
   workflow_dispatch:
 
 jobs:
   generate:
     runs-on: ubuntu-latest
-    permissions: { issues: write }
     steps:
       - uses: actions/setup-python@v4
-        with: { python-version: '3.11' }
+        with:
+          python-version: '3.11'
 
-      - name: Generate full text
+      - name: Generate text
         id: gen
         run: |
           THEMES=("新規事業" "マーケ施策" "プロダクト改善")
           THEME=${THEMES[$RANDOM % 3]}
           TITLE="企画×AI活用（${THEME}）：$(date +%Y%m%d)"
-          FULL_BODY="企画業務では、AIを情報整理と選択肢生成に使うと効果的です。発散と収束を分け、評価軸を先に定義することで、企画の質とスピードが向上します。毎日のタスク整理や企画案作りにAIを活用すると、効率が大幅に改善されます。複雑な分析やデータの要約も任せられ、時間を戦略検討やアイデア創出に集中できます。"
-          
+          FULL_BODY="企画業務では、AIを情報整理と選択肢生成に使うと効果的です。発散と収束を分け、評価軸を先に定義することで、企画の質とスピードが向上します。"
+
+          # 280文字以内に短縮
           python - << 'EOF'
 import textwrap, os
 full_text = os.environ["FULL_BODY"]
@@ -30,14 +32,11 @@ EOF
 
           echo "title=$TITLE" >> $GITHUB_OUTPUT
           echo "theme=$THEME" >> $GITHUB_OUTPUT
-          echo "body_full<<EOF" >> $GITHUB_OUTPUT
-          echo "$FULL_BODY" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
           echo "body_short<<EOF" >> $GITHUB_OUTPUT
           echo "$short_text" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Create Issue
+      - name: Create Issue (for manual X copy)
         uses: actions/github-script@v7
         with:
           script: |
